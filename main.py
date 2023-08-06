@@ -9,7 +9,7 @@ from io import StringIO
 import time
 from transformers import RobertaTokenizer, RobertaForMaskedLM
 import datetime
-
+import pickle
 from simple_template import generate_template, remove_redudant, generate_match_template, match_simple_operator
 from tool.logger import Logger
 from tool.fault_localization import get_location
@@ -200,37 +200,16 @@ def process_file(file, line_loc, tokenizer, model, beam_width, re_rank=True, top
     else:
         return pre_code, old_code, ret[:top_n_patches], post_code
 
-def save_array_to_csv(array, filename):
-    with open(filename, 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(array)
+def save_data_to_file(data, file_name):
+    with open(file_name, 'wb') as file:
+        pickle.dump(data, file)
+    print(f"Data saved to {file_name}")
 
-def load_array_from_csv(filename):
-    with open(filename, 'r') as file:
-        reader = csv.reader(file)
-        array = next(reader)
-    return array
-
-def convert(input_string):
-    input_string = input_string[1: -1]
-    print(input_string)
-    # Prepare a CSV-like input for csv.reader
-    csv_like_input = StringIO(input_string.replace(', ', ','))
-
-    # Read the CSV-like input and convert to a list
-    parsed_list = next(csv.reader([input_string], quotechar="'", delimiter=',',
-                     quoting=csv.QUOTE_ALL, skipinitialspace=True))
-
-    # Process each element to convert to appropriate types
-    converted_list = []
-    for item in parsed_list:
-        try:
-            converted_item = ast.literal_eval(item)
-        except (ValueError, SyntaxError):
-            # If ast.literal_eval fails, keep it as a string
-            converted_item = item
-        converted_list.append(converted_item)
-    return converted_list
+def load_data_from_file(file_name):
+    with open(file_name, 'rb') as file:
+        loaded_data = pickle.load(file)
+    print(f"Data loaded from {file_name}")
+    return loaded_data
 
 def current_formatted_time():
     current_time = datetime.datetime.now()
@@ -252,19 +231,18 @@ def repair(source_dir, buggy_file, buggy_loc, beam_width, re_rank, top_n_patches
     
     end_time = time.time()
     print(f"Patch Generation Time: {end_time - start_time}s")
-    save_array_to_csv(pre_code, os.path.join(patch_pool_folder, "pre_code.csv"))
-    save_array_to_csv(changes, os.path.join(patch_pool_folder, "changes.csv"))
-    save_array_to_csv(post_code, os.path.join(patch_pool_folder, "post_code.csv"))
+    save_data_to_file(pre_code, os.path.join(patch_pool_folder, "pre_code.pkl"))
+    save_data_to_file(changes, os.path.join(patch_pool_folder, "changes.pkl"))
+    save_data_to_file(post_code, os.path.join(patch_pool_folder, "post_code.pkl"))
     open(os.path.join(patch_pool_folder, "fault_line.txt"), "w").write(fault_line)
 
 def validate(bug_id, buggy_file, buggy_loc, uniapr, source_dir, out_dir):
     logger = Logger(os.path.join(out_dir, bug_id + "_result.txt"))
     testmethods = os.popen('defects4j export -w %s -p tests.trigger' % source_dir).readlines()
     patch_pool_folder = out_dir
-    pre_code = load_array_from_csv(os.path.join(patch_pool_folder, "pre_code.csv"))
-    changes = load_array_from_csv(os.path.join(patch_pool_folder, "changes.csv"))
-    changes = [convert(c) for c in changes]
-    post_code = load_array_from_csv(os.path.join(patch_pool_folder, "post_code.csv"))
+    pre_code = load_data_from_file(os.path.join(patch_pool_folder, "pre_code.pkl"))
+    changes = load_data_from_file(os.path.join(patch_pool_folder, "changes.pkl"))
+    post_code = load_data_from_file(os.path.join(patch_pool_folder, "post_code.pkl"))
     fault_line = open(os.path.join(patch_pool_folder, "fault_line.txt"), "r").read()
     if uniapr:
         raise NotImplementedError
@@ -283,7 +261,7 @@ if __name__ == "__main__":
     parser.add_argument('--buggy_file', type=str, default='source/org/jfree/chart/renderer/category/AbstractCategoryItemRenderer.java')
     parser.add_argument('--buggy_loc', type=int, default=1797)
     parser.add_argument('--uniapr', action='store_true', default=False)
-    parser.add_argument('--output_folder', type=str, default='codebert_result')
+    parser.add_argument('--output_folder', type=str, default='/output/patches')
     parser.add_argument('--skip_v', action='store_true', default=False)
     parser.add_argument('--re_rank', action='store_true', default=False)
     parser.add_argument('--beam_width', type=int, default=5)
