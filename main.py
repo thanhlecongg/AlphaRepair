@@ -250,7 +250,7 @@ def repair(source_dir, buggy_file, buggy_loc, beam_width, re_rank, top_n_patches
     save_array_to_csv(post_code, os.path.join(patch_pool_folder, "post_code.csv"))
     open(os.path.join(patch_pool_folder, "fault_line.txt"), "w").write(fault_line)
 
-def validate(bug_id, src_dir, buggy_file, buggy_loc, uniapr, source_dir):
+def validate(bug_id, buggy_file, buggy_loc, uniapr, source_dir):
     logger = Logger("patches/" + bug_id + "_result.txt")
     testmethods = os.popen('defects4j export -w %s -p tests.trigger' % source_dir).readlines()
     patch_pool_folder = "patches"
@@ -262,7 +262,7 @@ def validate(bug_id, src_dir, buggy_file, buggy_loc, uniapr, source_dir):
     if uniapr:
         raise NotImplementedError
     else:
-        validator = GVpatches(bug_id, testmethods, logger, src_dir, patch_pool_folder=patch_pool_folder)
+        validator = GVpatches(bug_id, testmethods, logger, source_dir, patch_pool_folder=patch_pool_folder)
     
     validator.add_new_patch_generation(pre_code, fault_line, changes, post_code, buggy_file, buggy_loc, 0)
     validator.validate()
@@ -286,4 +286,4 @@ if __name__ == "__main__":
     if args.task == "repair":
         repair(args.src_dir, args.buggy_file, args.buggy_loc - 1, args.beam_width, args.re_rank, args.top_n_patches)
     elif args.task == "validate":
-        validate(args.bug_id, args.src_dir, args.buggy_file, args.buggy_loc - 1, args.uniapr, args.src_dir)
+        validate(args.bug_id, args.buggy_file, args.buggy_loc - 1, args.uniapr, args.src_dir)
