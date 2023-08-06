@@ -233,8 +233,8 @@ def convert(input_string):
 def repair(source_dir, buggy_file, buggy_loc, beam_width, re_rank, top_n_patches):
     model = RobertaForMaskedLM.from_pretrained("microsoft/codebert-base-mlm").to(device)
     tokenizer = RobertaTokenizer.from_pretrained("microsoft/codebert-base-mlm")
-    subprocess.run('rm -rf patches/*', shell=True)
-    patch_pool_folder = "patches"
+    subprocess.run('rm -rf /output/*', shell=True)
+    patch_pool_folder = "/output"
     os.makedirs(patch_pool_folder, exist_ok=True)
     subprocess.run(f'rm -rf {patch_pool_folder}/*', shell=True)
     
@@ -251,9 +251,9 @@ def repair(source_dir, buggy_file, buggy_loc, beam_width, re_rank, top_n_patches
     open(os.path.join(patch_pool_folder, "fault_line.txt"), "w").write(fault_line)
 
 def validate(bug_id, buggy_file, buggy_loc, uniapr, source_dir):
-    logger = Logger("patches/" + bug_id + "_result.txt")
+    logger = Logger("/output/" + bug_id + "_result.txt")
     testmethods = os.popen('defects4j export -w %s -p tests.trigger' % source_dir).readlines()
-    patch_pool_folder = "patches"
+    patch_pool_folder = "/output"
     pre_code = load_array_from_csv(os.path.join(patch_pool_folder, "pre_code.csv"))
     changes = load_array_from_csv(os.path.join(patch_pool_folder, "changes.csv"))
     changes = [convert(c) for c in changes]
