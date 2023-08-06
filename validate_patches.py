@@ -318,7 +318,7 @@ class UNIAPRpatches(GVpatches):
                 self.write_changes_to_file(change, index)
                 self.logger.logo("----------------------------------------")
                 self.logger.logo("Patch Number :{}".format(self.num_of_patches))
-                self.logger.logo('- ' + self.fault_lines[index].strip())
+                self.logger.logo('- ' + self.fault_lines[index].strip() + "\n")
                 self.logger.logo('+ ' + change.strip())
                 self.logger.logo('mask:' + masked_line.strip())
                 if not self.skip_validation:
