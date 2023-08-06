@@ -219,7 +219,7 @@ def convert(input_string):
 
     # Read the CSV-like input and convert to a list
     parsed_list = next(csv.reader([input_string], quotechar="'", delimiter=',',
-                     quoting=csv.QUOTE_ALL, skipinitialspace=True)))
+                     quoting=csv.QUOTE_ALL, skipinitialspace=True))
 
     # Process each element to convert to appropriate types
     converted_list = []
