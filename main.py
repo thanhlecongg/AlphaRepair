@@ -218,7 +218,8 @@ def convert(input_string):
     csv_like_input = StringIO(input_string.replace(', ', ','))
 
     # Read the CSV-like input and convert to a list
-    parsed_list = next(csv.reader(csv_like_input))
+    parsed_list = next(parsed_list = next(csv.reader([input_string], quotechar="'", delimiter=',',
+                     quoting=csv.QUOTE_ALL, skipinitialspace=True)))
 
     # Process each element to convert to appropriate types
     converted_list = []
