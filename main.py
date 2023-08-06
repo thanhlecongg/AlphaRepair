@@ -236,12 +236,12 @@ def current_formatted_time():
     return current_time.strftime("%Y-%m-%d %H:%M:%S")
 
    
-def repair(source_dir, buggy_file, buggy_loc, beam_width, re_rank, top_n_patches):
+def repair(source_dir, buggy_file, buggy_loc, beam_width, re_rank, top_n_patches, out_dir):
     print("Start Time: " + current_formatted_time)
     model = RobertaForMaskedLM.from_pretrained("microsoft/codebert-base-mlm").to(device)
     tokenizer = RobertaTokenizer.from_pretrained("microsoft/codebert-base-mlm")
-    subprocess.run('rm -rf /output/*', shell=True)
-    patch_pool_folder = "/output"
+    subprocess.run(f'rm -rf {out_dir}/*', shell=True)
+    patch_pool_folder = out_dir
     os.makedirs(patch_pool_folder, exist_ok=True)
     subprocess.run(f'rm -rf {patch_pool_folder}/*', shell=True)
     
@@ -257,10 +257,10 @@ def repair(source_dir, buggy_file, buggy_loc, beam_width, re_rank, top_n_patches
     save_array_to_csv(post_code, os.path.join(patch_pool_folder, "post_code.csv"))
     open(os.path.join(patch_pool_folder, "fault_line.txt"), "w").write(fault_line)
 
-def validate(bug_id, buggy_file, buggy_loc, uniapr, source_dir):
-    logger = Logger("/output/" + bug_id + "_result.txt")
+def validate(bug_id, buggy_file, buggy_loc, uniapr, source_dir, out_dir):
+    logger = Logger(os.path.join(out_dir, bug_id + "_result.txt"))
     testmethods = os.popen('defects4j export -w %s -p tests.trigger' % source_dir).readlines()
-    patch_pool_folder = "/output"
+    patch_pool_folder = out_dir
     pre_code = load_array_from_csv(os.path.join(patch_pool_folder, "pre_code.csv"))
     changes = load_array_from_csv(os.path.join(patch_pool_folder, "changes.csv"))
     changes = [convert(c) for c in changes]
@@ -293,6 +293,6 @@ if __name__ == "__main__":
     print("Run with setting:")
     print(args)
     if args.task == "repair":
-        repair(args.src_dir, args.buggy_file, args.buggy_loc - 1, args.beam_width, args.re_rank, args.top_n_patches)
+        repair(args.src_dir, args.buggy_file, args.buggy_loc - 1, args.beam_width, args.re_rank, args.top_n_patches, args.output_folder)
     elif args.task == "validate":
-        validate(args.bug_id, args.buggy_file, args.buggy_loc - 1, args.uniapr, args.src_dir)
+        validate(args.bug_id, args.buggy_file, args.buggy_loc - 1, args.uniapr, args.src_dir, args.output_folder)

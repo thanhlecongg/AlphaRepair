@@ -153,6 +153,9 @@ class GVpatches(object):
             self.logger.logo("Failed Original Testcase")
         else:
             self.logger.logo("Success (Plausible Patch)")
+            return True
+        
+        return False
 
     def validate(self):
         start_time = time.time()
@@ -169,7 +172,13 @@ class GVpatches(object):
                 self.logger.logo('mask:' + masked_line.strip())
 
                 if not self.skip_validation:
-                    self.run_d4j_test(prob, index)
+                    is_plausible = self.run_d4j_test(prob, index)
+                    if is_plausible:
+                        diff_path = os.path.join(self.patch_pool_folder, "{}.diff".format(self.num_of_patches))
+                        with open(diff_path, "w") as f:
+                            f.write('- ' + self.fault_lines[index].strip())
+                            f.write('+ ' + change.strip())
+                    
                 self.num_of_patches += 1
         end_time = time.time()
         self.logger.logo("----------------- FINISH VALIDATION OF PATCHES -----------------")
