@@ -4,11 +4,12 @@ import signal
 import subprocess
 import time
 import javalang
+import shutil
 
 # Basic generate and valdiate class
 class GVpatches(object):
 
-    def __init__(self, bug_id, testmethods, logger, patch_pool_folder="patches-pool", skip_validation=False):
+    def __init__(self, bug_id, testmethods, logger, src_dir, patch_pool_folder="patches-pool", skip_validation=False):
         self.bug_id = bug_id
         self.pre_codes = []
         self.fault_lines = []
@@ -22,28 +23,27 @@ class GVpatches(object):
         self.patch_pool_folder = patch_pool_folder
         self.skip_validation = skip_validation
         self.generation_time = 0
+        self.src_dir = src_dir
 
     def add_new_patch_generation(self, pre_code, fault_line, changes, post_code, file, line_number, n_time):
         self.pre_codes.append(pre_code)
         self.fault_lines.append(fault_line)
         self.l_changes.append(changes)
         self.post_codes.append(post_code)
-        self.files.append(file)
+        self.files.append(os.path.join('/tmp/' + self.bug_id, file))
         self.line_numbers.append(line_number)
         self.generation_time += n_time
 
     def checkout_d4j_project(self):
         subprocess.run('rm -rf ' + '/tmp/' + self.bug_id, shell=True)
-        subprocess.run("defects4j checkout -p %s -v %s -w %s" % (self.bug_id.split('-')[0],
-                                                                 self.bug_id.split('-')[1] + 'b',
-                                                                 ('/tmp/' + self.bug_id)),
-                       shell=True)
+        shutil.copytree(self.src_dir, '/tmp/' + self.bug_id)
 
     def write_changes_to_file(self, change, index):
         with open(self.files[index], 'w', encoding='utf-8') as f:
             for line in self.pre_codes[index]:
                 f.write(line)
             f.write(change + '\n')
+            print(change)
             for line in self.post_codes[index]:
                 f.write(line)
         subprocess.run("touch -r " + self.files[index] + " -d '1 day' " + self.files[index],
@@ -167,6 +167,7 @@ class GVpatches(object):
                 self.logger.logo('- ' + self.fault_lines[index].strip())
                 self.logger.logo('+ ' + change.strip())
                 self.logger.logo('mask:' + masked_line.strip())
+
                 if not self.skip_validation:
                     self.run_d4j_test(prob, index)
                 self.num_of_patches += 1
@@ -282,6 +283,7 @@ class UNIAPRpatches(GVpatches):
                            "-DpatchesPool=" + self.patch_pool_folder + ">" + uniapr_val_file,
                            shell=True, check=True)
         except subprocess.CalledProcessError as e:
+            print(e)
             success = False
         return success
 

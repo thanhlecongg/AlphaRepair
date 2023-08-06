@@ -91,6 +91,7 @@ def process_file(file, line_loc, tokenizer, model, beam_width, re_rank=True, top
     post_code = data[line_loc + 1:]
 
     line_size = 100
+
     while (1):
         pre_code_input = "</s> " + " ".join([x.strip() for x in pre_code[-line_size:]])
         post_code_input = " ".join([x.strip() for x in post_code[0:line_size]]).replace("\n", "").strip()
@@ -181,6 +182,8 @@ def process_file(file, line_loc, tokenizer, model, beam_width, re_rank=True, top
 
     ret.sort(key=lambda x: x[1], reverse=True)
     ret = remove_redudant(ret)
+    print("Generated Patches: " + str(len(ret)))
+
     if top_n_patches == -1:
         return pre_code, old_code, ret, post_code
     else:
@@ -190,7 +193,6 @@ def process_file(file, line_loc, tokenizer, model, beam_width, re_rank=True, top
 def main(bug_ids, output_folder, skip_validation, uniapr, beam_width, re_rank, perfect, top_n_patches):
     if bug_ids[0] == 'none':
         bug_ids = build_d4j1_2()
-
     model = RobertaForMaskedLM.from_pretrained("microsoft/codebert-base-mlm").to(device)
     tokenizer = RobertaTokenizer.from_pretrained("microsoft/codebert-base-mlm")
 
@@ -199,8 +201,9 @@ def main(bug_ids, output_folder, skip_validation, uniapr, beam_width, re_rank, p
         subprocess.run("defects4j checkout -p %s -v %s -w %s" % (
             bug_id.split('-')[0], bug_id.split('-')[1] + 'b', ('/tmp/' + bug_id)), shell=True)
         patch_pool_folder = "patches-pool"
+        
         location = get_location(bug_id, perfect=perfect)
-        # location = get_location_tbar(bug_id)
+        print(location)
         if perfect:
             patch_pool_folder = "pfl-patches-pool-temp"
 
@@ -208,11 +211,12 @@ def main(bug_ids, output_folder, skip_validation, uniapr, beam_width, re_rank, p
 
         logger = Logger(output_folder + '/' + bug_id + "_result.txt")
         logger.logo(args)
+
         if uniapr:
             validator = UNIAPRpatches(bug_id, testmethods, logger, patch_pool_folder=patch_pool_folder,
                                       skip_validation=skip_validation)
         else:
-            validator = GVpatches(bug_id, testmethods, logger, patch_pool_folder=patch_pool_folder,
+            validator = GVpatches(bug_id, testmethods, logger, src_dirpatch_pool_folder=patch_pool_folder,
                                   skip_validation=skip_validation)
 
         for file, line_number in location:
@@ -227,9 +231,9 @@ def main(bug_ids, output_folder, skip_validation, uniapr, beam_width, re_rank, p
                 pre_code, fault_line, changes, post_code = process_file(file, line_number, tokenizer, model, beam_width,
                                                                         re_rank, top_n_patches)
             end_time = time.time()
+
             validator.add_new_patch_generation(pre_code, fault_line, changes, post_code, file, line_number,
                                                end_time - start_time)
-
         validator.validate()
 
         subprocess.run('rm -rf ' + '/tmp/' + bug_id, shell=True)
@@ -237,7 +241,7 @@ def main(bug_ids, output_folder, skip_validation, uniapr, beam_width, re_rank, p
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--bug_id', type=str, default='none')
+    parser.add_argument('--bug_id', type=str, default='Chart-1')
     parser.add_argument('--uniapr', action='store_true', default=False)
     parser.add_argument('--output_folder', type=str, default='codebert_result')
     parser.add_argument('--skip_v', action='store_true', default=False)

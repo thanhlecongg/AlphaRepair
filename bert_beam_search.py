@@ -74,7 +74,6 @@ class BeamSearch(object):
         return beam_list
 
     def generate_beam(self):
-
         current_masked_index = 0
         beam_list = self.__initial_beam_generate(current_masked_index)
 
@@ -95,7 +94,6 @@ class BeamSearch(object):
 
             temp_beam_list.sort(key=lambda x: x[0], reverse=True)
             beam_list = [x for x in temp_beam_list[:self.beam_width]]
-
         if self.re_rank:
             beam_list = self.__rerank_beam(beam_list)
 
