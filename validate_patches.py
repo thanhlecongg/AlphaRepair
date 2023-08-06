@@ -174,10 +174,11 @@ class GVpatches(object):
                 if not self.skip_validation:
                     is_plausible = self.run_d4j_test(prob, index)
                     if is_plausible:
-                        diff_path = os.path.join(self.patch_pool_folder, "{}.diff".format(self.num_of_patches))
+                        diff_path = os.path.join(self.patch_pool_folder, "plausible.diff")
                         with open(diff_path, "w") as f:
                             f.write('- ' + self.fault_lines[index].strip() + "\n")
                             f.write('+ ' + change.strip())
+                        break
                     
                 self.num_of_patches += 1
         end_time = time.time()
