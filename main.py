@@ -237,7 +237,7 @@ def current_formatted_time():
 
    
 def repair(source_dir, buggy_file, buggy_loc, beam_width, re_rank, top_n_patches, out_dir):
-    print("Start Time: " + current_formatted_time)
+    print("Start Time: " + current_formatted_time())
     model = RobertaForMaskedLM.from_pretrained("microsoft/codebert-base-mlm").to(device)
     tokenizer = RobertaTokenizer.from_pretrained("microsoft/codebert-base-mlm")
     subprocess.run(f'rm -rf {out_dir}/*', shell=True)
@@ -273,7 +273,7 @@ def validate(bug_id, buggy_file, buggy_loc, uniapr, source_dir, out_dir):
     
     validator.add_new_patch_generation(pre_code, fault_line, changes, post_code, buggy_file, buggy_loc, 0)
     validator.validate()
-    print("End Time: " + current_formatted_time)
+    print("End Time: " + current_formatted_time())
 
 
 if __name__ == "__main__":
