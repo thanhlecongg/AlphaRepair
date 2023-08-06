@@ -8,6 +8,7 @@ import ast
 from io import StringIO
 import time
 from transformers import RobertaTokenizer, RobertaForMaskedLM
+import datetime
 
 from simple_template import generate_template, remove_redudant, generate_match_template, match_simple_operator
 from tool.logger import Logger
@@ -230,7 +231,13 @@ def convert(input_string):
         converted_list.append(converted_item)
     return converted_list
 
+def current_formatted_time():
+    current_time = datetime.datetime.now()
+    return current_time.strftime("%Y-%m-%d %H:%M:%S")
+
+   
 def repair(source_dir, buggy_file, buggy_loc, beam_width, re_rank, top_n_patches):
+    print("Start Time: " + current_formatted_time)
     model = RobertaForMaskedLM.from_pretrained("microsoft/codebert-base-mlm").to(device)
     tokenizer = RobertaTokenizer.from_pretrained("microsoft/codebert-base-mlm")
     subprocess.run('rm -rf /output/*', shell=True)
@@ -266,6 +273,8 @@ def validate(bug_id, buggy_file, buggy_loc, uniapr, source_dir):
     
     validator.add_new_patch_generation(pre_code, fault_line, changes, post_code, buggy_file, buggy_loc, 0)
     validator.validate()
+    print("End Time: " + current_formatted_time)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
