@@ -291,6 +291,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print("Run with setting:")
     print(args)
+    print(f"Using device: {device}")
     if args.task == "repair":
         repair(args.src_dir, args.buggy_file, args.buggy_loc - 1, args.beam_width, args.re_rank, args.top_n_patches, args.output_folder)
     elif args.task == "validate":
