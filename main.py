@@ -233,7 +233,7 @@ def convert(input_string):
 
 def current_formatted_time():
     current_time = datetime.datetime.now()
-    return current_time.strftime("%Y-%m-%d %H:%M:%S")
+    return current_time.strftime("%a %d %b %Y %H:%M:%S %p")
 
    
 def repair(source_dir, buggy_file, buggy_loc, beam_width, re_rank, top_n_patches, out_dir):
