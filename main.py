@@ -237,7 +237,6 @@ def current_formatted_time():
 
    
 def repair(source_dir, buggy_file, buggy_loc, beam_width, re_rank, top_n_patches, out_dir):
-    print("Start Time: " + current_formatted_time())
     model = RobertaForMaskedLM.from_pretrained("microsoft/codebert-base-mlm").to(device)
     tokenizer = RobertaTokenizer.from_pretrained("microsoft/codebert-base-mlm")
     subprocess.run(f'rm -rf {out_dir}/*', shell=True)
@@ -273,7 +272,6 @@ def validate(bug_id, buggy_file, buggy_loc, uniapr, source_dir, out_dir):
     
     validator.add_new_patch_generation(pre_code, fault_line, changes, post_code, buggy_file, buggy_loc, 0)
     validator.validate()
-    print("End Time: " + current_formatted_time())
 
 
 if __name__ == "__main__":
@@ -289,6 +287,7 @@ if __name__ == "__main__":
     parser.add_argument('--re_rank', action='store_true', default=False)
     parser.add_argument('--beam_width', type=int, default=5)
     parser.add_argument('--top_n_patches', type=int, default=-1)
+    print("Start Time: " + current_formatted_time())
     args = parser.parse_args()
     print("Run with setting:")
     print(args)
@@ -296,3 +295,4 @@ if __name__ == "__main__":
         repair(args.src_dir, args.buggy_file, args.buggy_loc - 1, args.beam_width, args.re_rank, args.top_n_patches, args.output_folder)
     elif args.task == "validate":
         validate(args.bug_id, args.buggy_file, args.buggy_loc - 1, args.uniapr, args.src_dir, args.output_folder)
+    print("End Time: " + current_formatted_time())
