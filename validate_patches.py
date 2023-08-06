@@ -176,7 +176,7 @@ class GVpatches(object):
                     if is_plausible:
                         diff_path = os.path.join(self.patch_pool_folder, "{}.diff".format(self.num_of_patches))
                         with open(diff_path, "w") as f:
-                            f.write('- ' + self.fault_lines[index].strip())
+                            f.write('- ' + self.fault_lines[index].strip() + "\n")
                             f.write('+ ' + change.strip())
                     
                 self.num_of_patches += 1
@@ -318,7 +318,7 @@ class UNIAPRpatches(GVpatches):
                 self.write_changes_to_file(change, index)
                 self.logger.logo("----------------------------------------")
                 self.logger.logo("Patch Number :{}".format(self.num_of_patches))
-                self.logger.logo('- ' + self.fault_lines[index].strip() + "\n")
+                self.logger.logo('- ' + self.fault_lines[index].strip())
                 self.logger.logo('+ ' + change.strip())
                 self.logger.logo('mask:' + masked_line.strip())
                 if not self.skip_validation:
