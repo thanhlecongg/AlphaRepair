@@ -17,9 +17,6 @@ from tool.d4j import build_d4j1_2
 from validate_patches import GVpatches, UNIAPRpatches
 from bert_beam_search import BeamSearch
 
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
-
-
 def comment_remover(text):
     def replacer(match):
         s = match.group(0)
@@ -266,10 +263,14 @@ if __name__ == "__main__":
     parser.add_argument('--re_rank', action='store_true', default=False)
     parser.add_argument('--beam_width', type=int, default=5)
     parser.add_argument('--top_n_patches', type=int, default=-1)
+    parser.add_argument('--device', type=int, default=0)
     print("Start Time: " + current_formatted_time())
     args = parser.parse_args()
     print("Run with setting:")
     print(args)
+    
+    global device 
+    device = f"cuda:{args.device}" if torch.cuda.is_available() else "cpu"
     print(f"Using device: {device}")
     if args.task == "repair":
         repair(args.src_dir, args.buggy_file, args.buggy_loc - 1, args.beam_width, args.re_rank, args.top_n_patches, args.output_folder)
